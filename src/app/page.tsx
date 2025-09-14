@@ -1,103 +1,165 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import React, { useState, useMemo } from 'react';
+import { SearchBar } from '@/components/search/SearchBar';
+import { NewsList } from '@/components/news/NewsList';
+import { CreateNewsModal } from '@/components/news/CreateNewsModal';
+import { Button } from '@/components/ui/button';
+import { News, CreateNewsInput } from '@/types/news';
+
+// Datos de ejemplo almacenados en memoria
+const initialNews: News[] = [
+  {
+    id: 1,
+    title: "Avances en Inteligencia Artificial revolucionan la búsqueda semántica",
+    body: "Los nuevos modelos de lenguaje están transformando la manera en que buscamos y encontramos información. La búsqueda semántica permite entender el contexto y significado de las consultas, ofreciendo resultados más precisos y relevantes para los usuarios.",
+    author: "María García",
+    date: new Date('2024-03-15T10:30:00'),
+    imageUrl: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=500&h=300&fit=crop",
+    createdAt: new Date('2024-03-15T10:30:00'),
+    updatedAt: new Date('2024-03-15T10:30:00')
+  },
+  {
+    id: 2,
+    title: "Next.js 15 introduce nuevas funcionalidades para desarrolladores",
+    body: "La última versión del framework de React incluye mejoras significativas en performance, nuevas características del App Router y mejor integración con bases de datos. Los desarrolladores podrán crear aplicaciones más rápidas y eficientes.",
+    author: "Carlos Rodríguez",
+    date: new Date('2024-03-14T14:20:00'),
+    imageUrl: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=500&h=300&fit=crop",
+    createdAt: new Date('2024-03-14T14:20:00'),
+    updatedAt: new Date('2024-03-14T14:20:00')
+  },
+  {
+    id: 3,
+    title: "PostgreSQL y embeddings: El futuro de las bases de datos vectoriales",
+    body: "PostgreSQL se consolida como una excelente opción para almacenar y consultar vectores de embeddings. Con extensiones como pgvector, las bases de datos tradicionales pueden manejar búsquedas de similitud de manera eficiente.",
+    author: "Ana Martínez",
+    date: new Date('2024-03-13T09:15:00'),
+    createdAt: new Date('2024-03-13T09:15:00'),
+    updatedAt: new Date('2024-03-13T09:15:00')
+  },
+  {
+    id: 4,
+    title: "PostgreSQL y embeddings: El futuro de las bases de datos vectoriales",
+    body: "PostgreSQL se consolida como una excelente opción para almacenar y consultar vectores de embeddings. Con extensiones como pgvector, las bases de datos tradicionales pueden manejar búsquedas de similitud de manera eficiente.",
+    author: "Ana Martínez",
+    date: new Date('2024-03-13T09:15:00'),
+    createdAt: new Date('2024-03-13T09:15:00'),
+    updatedAt: new Date('2024-03-13T09:15:00')
+  },
+  {
+    id: 5,
+    title: "PostgreSQL y embeddings: El futuro de las bases de datos vectoriales",
+    body: "PostgreSQL se consolida como una excelente opción para almacenar y consultar vectores de embeddings. Con extensiones como pgvector, las bases de datos tradicionales pueden manejar búsquedas de similitud de manera eficiente.",
+    author: "Ana Martínez",
+    date: new Date('2024-03-13T09:15:00'),
+    createdAt: new Date('2024-03-13T09:15:00'),
+    updatedAt: new Date('2024-03-13T09:15:00')
+  }
+];
+
+export default function HomePage() {
+  const [news, setNews] = useState<News[]>(initialNews);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Filtrar noticias basado en la búsqueda (búsqueda simple por título y contenido)
+  const filteredNews = useMemo(() => {
+    if (!searchQuery.trim()) return news;
+    
+    const query = searchQuery.toLowerCase();
+    return news.filter(item => 
+      item.title.toLowerCase().includes(query) || 
+      item.body.toLowerCase().includes(query) ||
+      item.author.toLowerCase().includes(query)
+    );
+  }, [news, searchQuery]);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const handleCreateNews = (newNewsData: CreateNewsInput) => {
+    const newNews: News = {
+      id: Math.max(...news.map(n => n.id), 0) + 1,
+      ...newNewsData,
+      date: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    setNews(prev => [newNews, ...prev]);
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Portal de Noticias
+            </h1>
+            <span className="text-sm text-gray-500">
+              Búsqueda Semántica con IA
+            </span>
+          </div>
+        </div>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search and Create Section */}
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <SearchBar 
+              onSearch={handleSearch}
+              placeholder="Buscar noticias por título, contenido o autor..."
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="whitespace-nowrap"
+            >
+              + Nueva Noticia
+            </Button>
+          </div>
+          
+          {searchQuery && (
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-sm text-gray-600">
+                Mostrando {filteredNews.length} resultado(s) para "{searchQuery}"
+              </p>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Limpiar búsqueda
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* News List */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900">
+              {searchQuery ? 'Resultados de búsqueda' : 'Últimas Noticias'}
+            </h2>
+            <span className="text-sm text-gray-500">
+              Total: {filteredNews.length} noticia(s)
+            </span>
+          </div>
+          
+          <NewsList news={filteredNews} />
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      {/* Create News Modal */}
+      <CreateNewsModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateNews}
+      />
     </div>
   );
 }
