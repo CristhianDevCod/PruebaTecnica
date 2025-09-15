@@ -22,7 +22,7 @@ export const NewsList: React.FC<Props> = ({ news, onSelect }) => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {news.map((item) => (
         <div key={item.id}>
-          <NewsCard news={item} onClick={() => {onSelect?.(item); console.log('clicke')}} />
+          <NewsCard news={item} onClick={() => onSelect?.(item)} />
         </div>
       ))}
     </div>
