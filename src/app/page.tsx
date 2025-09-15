@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { SearchBar } from '@/components/search/SearchBar';
 import { NewsList } from '@/components/news/NewsList';
 import { CreateNewsModal } from '@/components/news/CreateNewsModal';
@@ -8,59 +8,22 @@ import { NewsDetail } from '@/components/news/NewsDetail';
 import { Button } from '@/components/ui/button';
 import { News, CreateNewsInput } from '@/types/news';
 
-// Datos de ejemplo
-const initialNews: News[] = [
-  {
-    id: 1,
-    title: "Avances en Inteligencia Artificial revolucionan la búsqueda semántica",
-    body: "Los nuevos modelos de lenguaje están transformando la manera en que buscamos y encontramos información. La búsqueda semántica permite entender el contexto y significado de las consultas, ofreciendo resultados más precisos y relevantes para los usuarios.",
-    author: "María García",
-    date: new Date('2024-03-15T10:30:00'),
-    imageUrl: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=500&h=300&fit=crop",
-    createdAt: new Date('2024-03-15T10:30:00'),
-    updatedAt: new Date('2024-03-15T10:30:00')
-  },
-  {
-    id: 2,
-    title: "Next.js 15 introduce nuevas funcionalidades para desarrolladores",
-    body: "La última versión del framework de React incluye mejoras significativas en performance, nuevas características del App Router y mejor integración con bases de datos. Los desarrolladores podrán crear aplicaciones más rápidas y eficientes.",
-    author: "Carlos Rodríguez",
-    date: new Date('2024-03-14T14:20:00'),
-    imageUrl: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=500&h=300&fit=crop",
-    createdAt: new Date('2024-03-14T14:20:00'),
-    updatedAt: new Date('2024-03-14T14:20:00')
-  },
-  {
-    id: 3,
-    title: "PostgreSQL y embeddings: El futuro de las bases de datos vectoriales",
-    body: "PostgreSQL se consolida como una excelente opción para almacenar y consultar vectores de embeddings. Con extensiones como pgvector, las bases de datos tradicionales pueden manejar búsquedas de similitud de manera eficiente.",
-    author: "Ana Martínez",
-    date: new Date('2024-03-13T09:15:00'),
-    createdAt: new Date('2024-03-13T09:15:00'),
-    updatedAt: new Date('2024-03-13T09:15:00')
-  },
-  {
-    id: 4,
-    title: "PostgreSQL y embeddings: El futuro de las bases de datos vectoriales",
-    body: "PostgreSQL se consolida como una excelente opción para almacenar y consultar vectores de embeddings. Con extensiones como pgvector, las bases de datos tradicionales pueden manejar búsquedas de similitud de manera eficiente.",
-    author: "Ana Martínez",
-    date: new Date('2024-03-13T09:15:00'),
-    createdAt: new Date('2024-03-13T09:15:00'),
-    updatedAt: new Date('2024-03-13T09:15:00')
-  },
-  {
-    id: 5,
-    title: "PostgreSQL y embeddings: El futuro de las bases de datos vectoriales",
-    body: "PostgreSQL se consolida como una excelente opción para almacenar y consultar vectores de embeddings. Con extensiones como pgvector, las bases de datos tradicionales pueden manejar búsquedas de similitud de manera eficiente.",
-    author: "Ana Martínez",
-    date: new Date('2024-03-13T09:15:00'),
-    createdAt: new Date('2024-03-13T09:15:00'),
-    updatedAt: new Date('2024-03-13T09:15:00')
-  }
-];
+function mapApiNewsToClient(item: any): News {
+  return {
+    id: typeof item.id === 'string' ? Number(item.id) : item.id,
+    title: item.title,
+    body: item.body,
+    author: item.author,
+    imageUrl: item.imageUrl ?? undefined,
+    date: item.date ? new Date(item.date) : new Date(),
+    createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
+    updatedAt: item.updatedAt ? new Date(item.updatedAt) : new Date(),
+  };
+}
 
 export default function HomePage() {
-  const [news, setNews] = useState<News[]>(initialNews);
+  // <-- inicia vacío y sin datos locales
+  const [news, setNews] = useState<News[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -72,27 +35,67 @@ export default function HomePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<News | null>(null);
 
+  // loading / error
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Cargar noticias desde API al montar (siempre intenta cargar)
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch('/api/news');
+        if (!res.ok) throw new Error(`Error al obtener noticias: ${res.status}`);
+        const data = await res.json();
+        if (!mounted) return;
+        const mapped: News[] = Array.isArray(data) ? data.map(mapApiNewsToClient) : [];
+        setNews(mapped); // reemplaza (no concat con datos locales)
+      } catch (err: any) {
+        console.error(err);
+        if (mounted) setError(err.message ?? 'Error al cargar noticias');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
+
   const filteredNews = useMemo(() => {
     if (!searchQuery.trim()) return news;
     const q = searchQuery.toLowerCase();
-    return news.filter(item =>
-      item.title.toLowerCase().includes(q) ||
-      item.body.toLowerCase().includes(q) ||
-      item.author.toLowerCase().includes(q)
+    return news.filter(
+      (item) =>
+        item.title.toLowerCase().includes(q) ||
+        item.body.toLowerCase().includes(q) ||
+        item.author.toLowerCase().includes(q)
     );
   }, [news, searchQuery]);
 
   const handleSearch = (query: string) => setSearchQuery(query);
 
-  const handleCreateNews = (newNewsData: CreateNewsInput) => {
-    const newNews: News = {
-      id: Math.max(...news.map(n => n.id), 0) + 1,
-      ...newNewsData,
-      date: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    setNews(prev => [newNews, ...prev]);
+  // CREATE -> POST /api/news
+  const handleCreateNews = async (newNewsData: CreateNewsInput) => {
+    try {
+      const res = await fetch('/api/news', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newNewsData),
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || 'Error creando noticia');
+      }
+      const created = await res.json();
+      const mapped = mapApiNewsToClient(created);
+      setNews((prev) => [mapped, ...prev]); // funciona aunque prev sea []
+      setIsCreateModalOpen(false);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message ?? 'Error creando noticia');
+    }
   };
 
   const handleSelectNews = (item: News) => {
@@ -100,42 +103,62 @@ export default function HomePage() {
     setIsDetailOpen(true);
   };
 
-  // Abrir editor (llamado desde NewsDetail -> onEdit)
   const handleOpenEdit = (item: News) => {
     setEditTarget(item);
     setIsEditModalOpen(true);
   };
 
-  // Guardar edición: actualiza array y también selectedNews si está abierto
-  const handleUpdateNews = (data: CreateNewsInput) => {
+  // UPDATE -> PUT /api/news/:id
+  const handleUpdateNews = async (data: CreateNewsInput) => {
     if (!editTarget) return;
-    const updated = {
-      ...editTarget,
-      ...data,
-      updatedAt: new Date()
-    };
-    setNews(prev => prev.map(n => n.id === editTarget.id ? updated : n));
-    setSelectedNews(prev => (prev && prev.id === editTarget.id ? updated : prev));
-    setIsEditModalOpen(false);
-    setEditTarget(null);
-    // opcional: mantener modal detalle abierto mostrando la versión actualizada
+    try {
+      const res = await fetch(`/api/news/${editTarget.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => '');
+        throw new Error(txt || 'Error actualizando noticia');
+      }
+      const updated = await res.json();
+      const mapped = mapApiNewsToClient(updated);
+      setNews((prev) => prev.map((n) => (n.id === mapped.id ? mapped : n)));
+      setSelectedNews((prev) => (prev && prev.id === mapped.id ? mapped : prev));
+      setIsEditModalOpen(false);
+      setEditTarget(null);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message ?? 'Error actualizando noticia');
+    }
   };
 
-  const handleDeleteNews = (item: News) => {
-  setNews(prev => prev.filter(n => n.id !== item.id));
+  // DELETE -> DELETE /api/news/:id
+  const handleDeleteNews = async (item: News) => {
+    try {
+      const res = await fetch(`/api/news/${item.id}`, {
+        method: 'DELETE',
+      });
+      if (res.status !== 204) {
+        const txt = await res.text().catch(() => '');
+        throw new Error(txt || 'Error eliminando noticia');
+      }
 
-  // If the detail is open showing that news, close it
-  if (selectedNews && selectedNews.id === item.id) {
-    setIsDetailOpen(false);
-    setSelectedNews(null);
-  }
+      setNews((prev) => prev.filter((n) => n.id !== item.id));
 
-  // If the publisher is open about that story, close it as well
-  if (editTarget && editTarget.id === item.id) {
-    setIsEditModalOpen(false);
-    setEditTarget(null);
-  }
-};
+      if (selectedNews && selectedNews.id === item.id) {
+        setIsDetailOpen(false);
+        setSelectedNews(null);
+      }
+      if (editTarget && editTarget.id === item.id) {
+        setIsEditModalOpen(false);
+        setEditTarget(null);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message ?? 'Error eliminando noticia');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -161,6 +184,9 @@ export default function HomePage() {
               <button onClick={() => setSearchQuery('')} className="text-sm text-blue-600 hover:text-blue-800">Limpiar búsqueda</button>
             </div>
           )}
+
+          {loading && <p className="text-sm text-gray-500 mt-3">Cargando noticias...</p>}
+          {error && <p className="text-sm text-red-600 mt-3">Error: {error}</p>}
         </div>
 
         <div className="mb-8">
@@ -169,7 +195,15 @@ export default function HomePage() {
             <span className="text-sm text-gray-500">Total: {filteredNews.length} noticia(s)</span>
           </div>
 
-          <NewsList news={filteredNews} onSelect={handleSelectNews} onDelete={handleDeleteNews} />
+          {/* Si no hay noticias y no está cargando mostramos mensaje vacío */}
+          {!loading && news.length === 0 && !error ? (
+            <div className="text-center py-12">
+              <div className="text-gray-500 text-lg mb-2">No hay noticias en la base de datos</div>
+              <p className="text-gray-400">Crea la primera noticia para comenzar</p>
+            </div>
+          ) : (
+            <NewsList news={filteredNews} onSelect={handleSelectNews} onDelete={handleDeleteNews} />
+          )}
         </div>
       </main>
 
@@ -206,6 +240,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-
-
