@@ -1,0 +1,36 @@
+# node / build
+node_modules
+npm-debug.log
+yarn-error.log
+.pnp
+.pnp.js
+dist
+.build
+output
+
+# git / editor / sistema
+.git
+.gitignore
+.vscode
+.idea
+
+# entornos y credenciales
+.env
+.env.local
+.env.*.local
+.DS_Store
+
+# dependencias y caches
+.npm
+.cache
+.vite
+.next
+
+# archivos grandes que no necesitas
+coverage
+coverage/*
+*.tgz
+
+# opcionales
+tests
+*.log

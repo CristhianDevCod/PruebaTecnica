@@ -18,6 +18,23 @@ services:
       timeout: 5s
       retries: 5
 
+  ai-model:
+    build:
+      context: .
+      dockerfile: ai-model/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - MODEL_PORT=8000
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   web:
     build:
       context: .
@@ -32,11 +49,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      # ai-model:
-      #   condition: service_started
+      ai-model:
+        condition: service_healthy
     ports:
       - "3000:3000"
-    # para DEV hot reload: monta el código y ejecuta dev command (comentado aquí)
+    # Para DEV con hot reload:
     # volumes:
     #   - ./:/app
     # command: ["yarn", "dev"]
@@ -46,24 +63,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ai-model:
-  #   build:
-  #     context: .
-  #     dockerfile: ai-model/Dockerfile
-  #   restart: unless-stopped
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     - MODEL_PORT=8000
-  #   ports:
-  #     - "8000:8000"
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
-  #     interval: 10s
-  #     timeout: 3s
-  #     retries: 5
-
-  # opcional: PGAdmin para administrar la BD
   pgadmin:
     image: dpage/pgadmin4
     restart: unless-stopped
@@ -75,7 +74,8 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   db_data:
