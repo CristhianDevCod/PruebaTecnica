@@ -8,12 +8,21 @@ type NewsDetailProps = {
   isOpen: boolean;
   onClose: () => void;
   onEdit?: (news: News) => void;
+  onDelete?: (news: News) => void; // 🔹 nueva prop
 };
 
-export const NewsDetail: React.FC<NewsDetailProps> = ({ news, isOpen, onClose, onEdit }) => {
+export const NewsDetail: React.FC<NewsDetailProps> = ({
+  news,
+  isOpen,
+  onClose,
+  onEdit,
+  onDelete
+}) => {
   useEffect(() => {
     if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     document.addEventListener('keydown', onKey);
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -42,8 +51,16 @@ export const NewsDetail: React.FC<NewsDetailProps> = ({ news, isOpen, onClose, o
     onClose();
   };
 
+  const handleDelete = () => {
+    if (!news) return;
+    // confirmation
+    if (confirm(`¿Seguro que deseas eliminar la noticia "${news.title}"?`)) {
+      onDelete?.(news);
+      onClose();
+    }
+  };
+
   return (
-    // Outer: allow scrolling on small screens and place modal a bit lower (items-start)
     <div
       className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 pt-8 pb-8 overflow-auto"
       aria-modal="true"
@@ -53,12 +70,10 @@ export const NewsDetail: React.FC<NewsDetailProps> = ({ news, isOpen, onClose, o
     >
       <div className="absolute inset-0 bg-black/50 transition-opacity" />
 
-      {/* Modal panel: limit height and allow internal scrolling */}
       <div
         className="relative z-10 max-w-3xl w-full bg-white rounded-2xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Image (no grows beyond its height) */}
         {news.imageUrl && (
           <div className="relative w-full flex-shrink-0 h-56 sm:h-72 md:h-80 lg:h-96 overflow-hidden bg-gray-100">
             <img
@@ -81,7 +96,6 @@ export const NewsDetail: React.FC<NewsDetailProps> = ({ news, isOpen, onClose, o
           </div>
         )}
 
-        {/* Content area: scrollable if needed */}
         <div className="p-6 sm:p-8 overflow-y-auto min-h-0">
           <div className="flex items-start justify-between gap-4">
             <div className="pr-8">
@@ -124,6 +138,15 @@ export const NewsDetail: React.FC<NewsDetailProps> = ({ news, isOpen, onClose, o
                 title="Editar noticia"
               >
                 Editar
+              </button>
+
+              <button
+                onClick={(e) => { e.stopPropagation(); handleDelete(); }}
+                className="bg-red-500 text-white border border-gray-200 shadow-sm px-3 py-1 rounded-md text-sm hover:bg-red-600 cursor-pointer"
+                aria-label="Eliminar noticia"
+                title="Eliminar noticia"
+              >
+                Eliminar
               </button>
             </div>
           </div>

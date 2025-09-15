@@ -24,4 +24,6 @@ export interface NewsListProps {
 
 export interface NewsCardProps {
   news: News;
+  onClick?: () => void;
+  onDelete?: () => void;
 }

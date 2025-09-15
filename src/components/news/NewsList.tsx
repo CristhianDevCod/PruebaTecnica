@@ -6,9 +6,10 @@ import { News } from '@/types/news';
 type Props = {
   news: News[];
   onSelect?: (item: News) => void;
+  onDelete?: (item: News) => void; // nuevo prop
 };
 
-export const NewsList: React.FC<Props> = ({ news, onSelect }) => {
+export const NewsList: React.FC<Props> = ({ news, onSelect, onDelete }) => {
   if (!news || news.length === 0) {
     return (
       <div className="text-center py-12">
@@ -22,7 +23,11 @@ export const NewsList: React.FC<Props> = ({ news, onSelect }) => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {news.map((item) => (
         <div key={item.id}>
-          <NewsCard news={item} onClick={() => onSelect?.(item)} />
+          <NewsCard
+            news={item}
+            onClick={() => onSelect?.(item)}
+            onDelete={() => onDelete?.(item)}
+          />
         </div>
       ))}
     </div>

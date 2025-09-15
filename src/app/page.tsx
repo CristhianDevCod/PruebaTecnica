@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { News, CreateNewsInput } from '@/types/news';
 
 // Datos de ejemplo
-// Datos de ejemplo almacenados en memoria
 const initialNews: News[] = [
   {
     id: 1,
@@ -122,6 +121,22 @@ export default function HomePage() {
     // opcional: mantener modal detalle abierto mostrando la versión actualizada
   };
 
+  const handleDeleteNews = (item: News) => {
+  setNews(prev => prev.filter(n => n.id !== item.id));
+
+  // If the detail is open showing that news, close it
+  if (selectedNews && selectedNews.id === item.id) {
+    setIsDetailOpen(false);
+    setSelectedNews(null);
+  }
+
+  // If the publisher is open about that story, close it as well
+  if (editTarget && editTarget.id === item.id) {
+    setIsEditModalOpen(false);
+    setEditTarget(null);
+  }
+};
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b">
@@ -154,7 +169,7 @@ export default function HomePage() {
             <span className="text-sm text-gray-500">Total: {filteredNews.length} noticia(s)</span>
           </div>
 
-          <NewsList news={filteredNews} onSelect={handleSelectNews} />
+          <NewsList news={filteredNews} onSelect={handleSelectNews} onDelete={handleDeleteNews} />
         </div>
       </main>
 
@@ -185,11 +200,8 @@ export default function HomePage() {
         news={selectedNews}
         isOpen={isDetailOpen}
         onClose={() => { setIsDetailOpen(false); setSelectedNews(null); }}
-        onEdit={(n) => {
-          handleOpenEdit(n);
-          // opcional: cerrar el detalle si quieres que solo quede abierto el editor
-          // setIsDetailOpen(false);
-        }}
+        onEdit={(n) => handleOpenEdit(n)}
+        onDelete={(n) => handleDeleteNews(n)}
       />
     </div>
   );
