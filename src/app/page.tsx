@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { SearchBar } from '@/components/search/SearchBar';
 import { NewsList } from '@/components/news/NewsList';
 import { CreateNewsModal } from '@/components/news/CreateNewsModal';
+import { NewsDetail } from '@/components/news/NewsDetail';
 import { Button } from '@/components/ui/button';
 import { News, CreateNewsInput } from '@/types/news';
 
@@ -63,13 +64,17 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  // Nuevo: estado para detalle de noticia
+  const [selectedNews, setSelectedNews] = useState<News | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+
   // Filtrar noticias basado en la búsqueda (búsqueda simple por título y contenido)
   const filteredNews = useMemo(() => {
     if (!searchQuery.trim()) return news;
-    
+
     const query = searchQuery.toLowerCase();
-    return news.filter(item => 
-      item.title.toLowerCase().includes(query) || 
+    return news.filter(item =>
+      item.title.toLowerCase().includes(query) ||
       item.body.toLowerCase().includes(query) ||
       item.author.toLowerCase().includes(query)
     );
@@ -87,8 +92,14 @@ export default function HomePage() {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    
+
     setNews(prev => [newNews, ...prev]);
+  };
+
+  // Nuevo: manejar selección desde NewsList
+  const handleSelectNews = (item: News) => {
+    setSelectedNews(item);
+    setIsDetailOpen(true);
   };
 
   return (
@@ -112,7 +123,7 @@ export default function HomePage() {
         {/* Search and Create Section */}
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <SearchBar 
+            <SearchBar
               onSearch={handleSearch}
               placeholder="Buscar noticias por título, contenido o autor..."
             />
@@ -123,7 +134,7 @@ export default function HomePage() {
               + Nueva Noticia
             </Button>
           </div>
-          
+
           {searchQuery && (
             <div className="mt-4 flex items-center justify-between">
               <p className="text-sm text-gray-600">
@@ -149,8 +160,9 @@ export default function HomePage() {
               Total: {filteredNews.length} noticia(s)
             </span>
           </div>
-          
-          <NewsList news={filteredNews} />
+
+          {/* <-- PASAMOS onSelect AQUÍ --> */}
+          <NewsList news={filteredNews} onSelect={handleSelectNews} />
         </div>
       </main>
 
@@ -159,6 +171,16 @@ export default function HomePage() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateNews}
+      />
+
+      {/* News Detail Modal */}
+      <NewsDetail
+        news={selectedNews}
+        isOpen={isDetailOpen}
+        onClose={() => {
+          setIsDetailOpen(false);
+          setSelectedNews(null);
+        }}
       />
     </div>
   );
