@@ -44,13 +44,13 @@ Antes de ejecutar el proyecto, asegúrate de tener instalado:
 git clone https://github.com/CristhianDevCod/PruebaTecnica.git
 cd news-semantic-search
 
-PRIMER paso
+Primer paso
 docker compose up --build -d
 
-segundo paso, verificar que los contenedores esten corriendo
+Segundo paso, verificar que los contenedores esten corriendo
 docker compose ps
 
-tercer paso ver los logs del contenedor web:
+Tercer paso ver los logs del contenedor web:
 docker compose logs -f web
 
 si todo esta correcto, se accede a la web
