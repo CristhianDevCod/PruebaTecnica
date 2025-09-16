@@ -49,8 +49,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      ai-model:
-        condition: service_healthy
+      # ai-model:
+      #   condition: service_healthy
     ports:
       - "3000:3000"
     # Para DEV con hot reload:

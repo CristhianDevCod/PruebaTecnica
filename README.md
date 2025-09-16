@@ -1,64 +1,57 @@
-# 📰 News Semantic Search
+# News Semantic Search
 
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-ORM-blue?logo=prisma)](https://www.prisma.io/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)](https://www.postgresql.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.95.2-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-Compose-blue?logo=docker)](https://www.docker.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+## Descripción del proyecto
 
-Aplicación web para la **creación, visualización y búsqueda semántica de noticias**, desarrollada con **Next.js**, **PostgreSQL**, **Prisma** y un microservicio de **FastAPI** que genera *embeddings* con `sentence-transformers`.
+**News Semantic Search** es una aplicación web desarrollada con **Next.js** que permite crear, editar, eliminar y buscar noticias. La aplicación utiliza una **base de datos PostgreSQL** para almacenar la información, y cuenta con integración de un **modelo de IA local** (`all-MiniLM-L6-v2`) para realizar **búsquedas semánticas** de noticias, facilitando encontrar resultados relevantes más allá de la coincidencia literal de palabras.
 
----
+La aplicación incluye las siguientes funcionalidades:
 
-## 📑 Tabla de contenidos
-
-1. [Requisitos previos](#-requisitos-previos)  
-2. [Configuración inicial](#-configuración-inicial)  
-3. [Ejecutar el proyecto con Docker](#️-ejecutar-el-proyecto-con-docker)  
-4. [Pruebas rápidas](#-pruebas-rápidas)  
-5. [Migraciones de base de datos](#️-migraciones-de-base-de-datos)  
-6. [Estructura del proyecto](#-estructura-del-proyecto)  
-7. [Desarrollo sin Docker](#-desarrollo-sin-docker-opcional)  
-8. [Notas](#-notas)  
-9. [Licencia](#-licencia)  
+- **CRUD completo de noticias**:  
+  - Crear noticias mediante un formulario con título, autor, contenido y URL de imagen.  
+  - Editar y actualizar noticias existentes.  
+  - Eliminar noticias de manera permanente.  
+- **Búsqueda tradicional y semántica**:  
+  - Buscar noticias por coincidencia de palabras clave.  
+  - Realizar búsquedas semánticas usando un modelo de IA local, permitiendo resultados más inteligentes y relevantes.  
 
 ---
 
-## 🚀 Requisitos previos
+## Tecnologías utilizadas
 
-- [Docker](https://www.docker.com/products/docker-desktop/) y Docker Compose instalados.  
-- (Opcional) [curl](https://curl.se/) para probar endpoints desde consola.  
+- **Frontend**: Next.js  
+- **Backend / API**: Next.js API Routes  
+- **Base de datos**: PostgreSQL  
+- **ORM**: Prisma  
+- **Inteligencia Artificial**: Modelo local `all-MiniLM-L6-v2` para embeddings semánticos  
+- **Contenedores**: Docker y Docker Compose  
 
 ---
 
-## ⚙️ Configuración inicial
+## Requisitos previos
 
-1. Clona este repositorio:
+Antes de ejecutar el proyecto, asegúrate de tener instalado:
 
-   ```bash
-   git clone https://github.com/CristhianDevCod/PruebaTecnica.git
-   cd news-semantic-search
+- [Docker](https://www.docker.com/get-started)  
+- [Docker Compose](https://docs.docker.com/compose/install/)  
+- Node.js (solo si quieres correr Next.js fuera de Docker para desarrollo local)  
 
-2. Copia el archivo de variables de entorno de ejemplo:
+---
 
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=root
-POSTGRES_DB=newsdb
-POSTGRES_PORT=5432
+## Configuración del proyecto
 
-DATABASE_URL=postgresql://postgres:root@db:5432/newsdb?schema=public
+1. Clonar el repositorio:
+```bash
+git clone https://github.com/CristhianDevCod/PruebaTecnica.git
+cd news-semantic-search
 
-RUN_PRISMA_MIGRATE=1
-
-PGADMIN_EMAIL=admin@example.com
-PGADMIN_PASSWORD=admin
-
-NEXT_PUBLIC_API_URL=http://localhost:3000/api
-AI_SERVICE_URL=http://ai-model:8000
-
-
-3) Construir y levantar todo (primer arranque real)
-
-Este es el comando principal que lanza y construye las imágenes y servicios:
+PRIMER paso
 docker compose up --build -d
+
+segundo paso, verificar que los contenedores esten corriendo
+docker compose ps
+
+tercer paso ver los logs del contenedor web:
+docker compose logs -f web
+
+si todo esta correcto, se accede a la web
+http://localhost:3000
